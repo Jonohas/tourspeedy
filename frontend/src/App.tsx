@@ -1,13 +1,31 @@
 /** @format */
 
-import React, {useState} from "react";
+import React, {useState, useCallback, useEffect} from "react";
+import {socket} from "./socket";
 
-import useWebSocket, {ReadyState} from "react-use-websocket";
+// import useWebSocket, {ReadyState} from "react-use-websocket";
 import "./index.css";
 
 function App() {
-	const [socketUrl, setSocketUrl] = useState("ws://localhost:8000");
-	return <div className="App"></div>;
+	const [isConnected, setIsConnected] = useState(socket.connected);
+	const [messages, setMessages] = useState([]);
+	const [message, setMessage] = useState("");
+
+	useEffect(() => {
+		socket.on("connect", () => {
+			setIsConnected(socket.connected);
+		});
+
+		socket.on("disconnect", () => {
+			setIsConnected(socket.connected);
+		});
+	}, []);
+
+	return (
+		<div className="App flex flex-col">
+			{isConnected ? "Connected" : "Not connected"}
+		</div>
+	);
 }
 
 export default App;
