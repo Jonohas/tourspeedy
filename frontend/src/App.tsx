@@ -8,8 +8,6 @@ import "./index.css";
 
 function App() {
 	const [isConnected, setIsConnected] = useState(socket.connected);
-	const [messages, setMessages] = useState([]);
-	const [message, setMessage] = useState("");
 
 	useEffect(() => {
 		socket.on("connect", () => {
