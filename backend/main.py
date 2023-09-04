@@ -19,6 +19,10 @@ app.add_middleware(
 async def home():
     return {'message': 'Hello👋 Developers💻'}
 
+@app.post("/ready")
+async def set_ready():
+    return {""}
+
 
 if __name__ == '__main__':
     uvicorn.run('main:app', reload=True)
