@@ -20,19 +20,15 @@ class TimingClass(metaclass=Singleton):
     @ready.setter
     def ready(self, value):
         self._ready = value
-        print("Should start Thread here:", end=" ")
 
         if value:
-            print(value)
-            self.sensor_watcher_thread = SensorWatcher(self)  # Create the thread with a reference to this instance.
-            self.sensor_watcher_thread.start()  # Start the thread.
+            if not self.sensor_watcher_thread:
+                self.start_thread()
+
         elif self.sensor_watcher_thread:
-            print(value)
             self.sensor_watcher_thread.stop_event.set()  # Signal the thread to stop.
             self.sensor_watcher_thread.join()  # Wait for the thread to finish.
             self.sensor_watcher_thread = None  # Clear the reference to the thread.
-
-
 
     @property
     def timestamp1(self):
@@ -42,8 +38,6 @@ class TimingClass(metaclass=Singleton):
     def timestamp1(self, value):
         self._timestamp1 = value
 
-
-
     @property
     def timestamp2(self):
         return self._timestamp2
@@ -51,6 +45,10 @@ class TimingClass(metaclass=Singleton):
     @timestamp2.setter
     def timestamp2(self, value):
         self._timestamp2 = value
+
+    def start_thread(self):
+        self.sensor_watcher_thread = SensorWatcher(self)  # Create the thread with a reference to this instance.
+        self.sensor_watcher_thread.start()  # Start the thread.
 
 
         

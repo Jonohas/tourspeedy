@@ -4,12 +4,13 @@ import time
 from gpiozero import Button
 import RPi.GPIO as GPIO
 
+from classes.Singleton import Singleton
 
 
-
-class SensorWatcher(threading.Thread):
+class SensorWatcher(threading.Thread, metaclass=Singleton):
     def __init__(self, timing_instance):
         super(SensorWatcher, self).__init__()
+
         self.timing_instance = timing_instance
         self.lock = threading.Lock()
         self.stop_event = threading.Event()  # Event to signal the thread to stop.
