@@ -1,10 +1,12 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from socket_handlers import sio_app
 from classes.TimingClass import TimingClass
+from socket_handlers import SocketIOServer
 
 app = FastAPI()
+
+sio_app = SocketIOServer().app
 app.mount('/', app=sio_app)
 
 app.add_middleware(
@@ -15,7 +17,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-tc = TimingClass()
 
 @app.get('/')
 async def home():

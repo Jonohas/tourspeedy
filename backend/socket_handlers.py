@@ -1,31 +1,41 @@
 import socketio
+from classes.Singleton import Singleton
 from classes.TimingClass import TimingClass
 
-tc = TimingClass()
 
 
-sio_server = socketio.AsyncServer(
-    async_mode='asgi',
-    cors_allowed_origins=[]
-)
+class SocketIOServer(metaclass=Singleton):
+    def __init__(self):
+        if not hasattr(self, 'sio'):
 
-sio_app = socketio.ASGIApp(
-    socketio_server=sio_server,
-    socketio_path='sockets'
-)
+            self._tc = TimingClass()
+            self.sio = socketio.AsyncServer(
+                async_mode='asgi',
+                cors_allowed_origins=[]
+            )
+            self.app = socketio.ASGIApp(
+                socketio_server=self.sio,
+                socketio_path='sockets'
+            )
+
+            @self.sio.event
+            async def connect(sid, environ, auth):
+                print(f'{sid}: connected')
+                await self.sio.emit('join', {'sid': sid})
+
+            @self.sio.event
+            async def disconnect(sid):
+                print(f'{sid}: disconnected')
+
+            @self.sio.event
+            async def ready(sid):
+                print(f'{sid}: ready')
+                if self._tc:
+                    self._tc.ready = True
+                else:
+                    print("tc not ready yet")
+                await self.sio.emit('ready', {'sid': sid})
 
 
-@sio_server.event
-async def connect(sid, environ, auth):
-    print(f'{sid}: connected')
-    await sio_server.emit('join', {'sid': sid})
 
-@sio_server.event
-async def disconnect(sid):
-    print(f'{sid}: disconnected')
 
-@sio_server.event
-async def ready(sid):
-    print(f'{sid}: ready')
-    tc.ready = True
-    await sio_server.emit('ready', {'sid': sid})
