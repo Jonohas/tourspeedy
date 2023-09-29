@@ -5,23 +5,37 @@ import {socket} from "./socket";
 
 // import useWebSocket, {ReadyState} from "react-use-websocket";
 import "./index.css";
+import {ConnectionState} from "./components/ConnectionState";
+import {ConnectionManager} from "./components/ConnectionManager";
+import {SessionManager} from "./components/SessionManager";
 
 function App() {
 	const [isConnected, setIsConnected] = useState(socket.connected);
 
 	useEffect(() => {
-		socket.on("connect", () => {
-			setIsConnected(socket.connected);
-		});
+		function onConnect() {
+			setIsConnected(true);
+		}
 
-		socket.on("disconnect", () => {
-			setIsConnected(socket.connected);
-		});
+		function onDisconnect() {
+			setIsConnected(false);
+		}
+
+		socket.on("connect", onConnect);
+		socket.on("disconnect", onDisconnect);
+
+		return () => {
+			socket.off("connect", onConnect);
+			socket.off("disconnect", onDisconnect);
+		};
 	}, []);
 
 	return (
 		<div className="App flex flex-col">
-			{isConnected ? "Connected" : "Not connected"}
+			<ConnectionManager />
+			<ConnectionState isConnected={isConnected} />
+
+			<SessionManager />
 		</div>
 	);
 }

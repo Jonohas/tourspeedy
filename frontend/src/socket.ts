@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 const URL: string = "http://localhost:8000"
 
 export const socket = io(URL, {
-    path: "/sockets"
+    path: "/socket.io"
 });
 
 
