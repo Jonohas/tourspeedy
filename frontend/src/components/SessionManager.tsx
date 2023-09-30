@@ -54,15 +54,6 @@ export function SessionManager() {
 	}
 
 	function saveEvent() {
-		console.log({
-			startnumber: startNumber, 
-			license_plate: licensePlate, 
-			start: startTimestamp, 
-			stop: endTimestamp,
-			distance: distance,
-			speed: speed,
-			session_name: sessionName
-		});
 		socket.emit( "save", {
 			startnumber: startNumber, 
 			license_plate: licensePlate, 
