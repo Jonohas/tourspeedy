@@ -1,6 +1,6 @@
 from classes.SensorWatcher import SensorWatcher
 from classes.Singleton import Singleton
-
+from socket_handlers import SocketIOServer
 
 
 class TimingClass(metaclass=Singleton):
@@ -12,6 +12,7 @@ class TimingClass(metaclass=Singleton):
             self._timestamp2 = None
             self._ready = False
             self.sensor_watcher_thread = None  # To hold the reference of ButtonWatcher thread.
+            self.sio = SocketIOServer(self).sio
 
     @property
     def ready(self):

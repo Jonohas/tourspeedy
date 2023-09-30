@@ -6,7 +6,8 @@ from socket_handlers import SocketIOServer
 
 app = FastAPI()
 
-sio_app = SocketIOServer().app
+tc = TimingClass()
+sio_app = SocketIOServer(tc).app
 app.mount('/', app=sio_app)
 
 app.add_middleware(

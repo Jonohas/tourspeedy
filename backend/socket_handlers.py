@@ -1,14 +1,13 @@
 import socketio
 from classes.Singleton import Singleton
-from classes.TimingClass import TimingClass
 
 
 
 class SocketIOServer(metaclass=Singleton):
-    def __init__(self):
+    def __init__(self, tc):
         if not hasattr(self, 'sio'):
 
-            self._tc = TimingClass()
+            self._tc = tc
             self.sio = socketio.AsyncServer(
                 async_mode='asgi',
                 cors_allowed_origins=[]
