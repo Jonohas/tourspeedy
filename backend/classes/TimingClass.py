@@ -1,6 +1,8 @@
 from classes.SensorWatcher import SensorWatcher
 from classes.Singleton import Singleton
 from socket_handlers import SocketIOServer
+import asyncio
+import threading
 
 
 class TimingClass(metaclass=Singleton):
@@ -20,6 +22,7 @@ class TimingClass(metaclass=Singleton):
 
     @ready.setter
     def ready(self, value):
+        prev_ready = self._ready
         self._ready = value
 
         if value:
@@ -27,9 +30,17 @@ class TimingClass(metaclass=Singleton):
                 self.start_thread()
 
         elif self.sensor_watcher_thread:
-            self.sensor_watcher_thread.stop_event.set()  # Signal the thread to stop.
-            self.sensor_watcher_thread.join()  # Wait for the thread to finish.
-            self.sensor_watcher_thread = None  # Clear the reference to the thread.
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(self.stop_thread())
+
+
+    async def stop_thread(self):
+        self.sensor_watcher_thread.stop_event.set()  # Signal the thread to stop.
+        if threading.current_thread() is not self.sensor_watcher_thread:
+            self.sensor_watcher_thread.join() # Wait for the thread to finish.
+        self.sensor_watcher_thread = None  # Clear the reference to the thread.
+        await self.sio.emit("ready", {"ready": False})
 
     @property
     def timestamp1(self):

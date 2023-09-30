@@ -3,6 +3,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from classes.TimingClass import TimingClass
 from socket_handlers import SocketIOServer
+from classes.DB import create_tables, add_event, get_all_events, delete_tables
+import datetime
+
 
 app = FastAPI()
 
