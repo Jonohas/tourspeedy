@@ -1,41 +1,27 @@
 import { create } from 'zustand'
 
 interface ParticipantFormProps {
-    startNumber: string;
+    startNumber: number;
     licensePlate: string;
-    distance: number;
-    speed: number;
-    sessionName: string;
 }
 
 interface ParticipantFormMethods {
-    setStartNumber: (value: string) => void,
+    setStartNumber: (value: number) => void,
     setLicensePlate: (value: string) => void,
-    setDistance: (value: number) => void,
-    setSpeed: (value: number) => void,
-    setSessionName: (value: string) => void
+    clearForm: () => void
 }
 
 
 export const useParticipantForm = create<ParticipantFormProps & ParticipantFormMethods>((set) => ({
-    startNumber: "",
+    startNumber: 0,
     licensePlate: "",
-    distance: 0,
-    speed: 0,
-    sessionName: "",
     setLicensePlate: (value: string) => {
         set({ licensePlate: value })
     },
-    setStartNumber: (value: string) => {
+    setStartNumber: (value: number) => {
         set({ startNumber: value })
     },
-    setDistance: (value: number) => {
-        set({ distance: value })
-    },
-    setSpeed: (value: number) => {
-        set({ speed: value })
-    },
-    setSessionName: (value: string) => {
-        set({ sessionName: value })
+    clearForm: () => {
+        set({ startNumber: 0, licensePlate: "" })
     }
 }))

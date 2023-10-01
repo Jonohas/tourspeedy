@@ -8,6 +8,7 @@ import "./index.css";
 import {ConnectionState} from "./components/ConnectionState";
 import {ConnectionManager} from "./components/ConnectionManager";
 import {SessionManager} from "./components/SessionManager";
+import { OnlineBanner } from "./components/OnlineBanner";
 
 function App() {
 	const [isConnected, setIsConnected] = useState(socket.connected);
@@ -32,10 +33,9 @@ function App() {
 
 	return (
 		<div className="App flex flex-col">
-			<ConnectionManager />
-			<ConnectionState isConnected={isConnected} />
 
 			<SessionManager />
+			<OnlineBanner online={isConnected} />
 		</div>
 	);
 }

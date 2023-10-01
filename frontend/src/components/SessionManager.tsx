@@ -7,21 +7,23 @@ import { object, string, number } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParticipantForm } from "../stores/useParticipantForm";
+import { CustomInput } from "./CustomInput";
+import { useEventForm } from "../stores/useEventForm";
 
 
 interface Event {
-	id: number;
-	startnumber: string;
+	id?: number;
+	startnumber: number;
 	license_plate: string;
-	start_timestamp: string;
-	end_timestamp: string;
+	start_timestamp: number;
+	end_timestamp: number;
 	distance: number;
 	speed: number;
 	session_name: string;
 }
 
 const formSchema = object({
-	startnumber: string().min(1, 'Startnumber is required'),
+	startnumber: number(),
 	license_plate: string().min(1, 'Licenseplate is required'),
 	distance: number(),
 	speed: number(),
@@ -36,12 +38,14 @@ export function SessionManager() {
 
 	const [events, setEvents] = useState<Event[]>([]);
 
-	const { register, handleSubmit, setValue, formState: { errors } } = useForm({
+	const { register, handleSubmit, setValue, resetField, formState: { errors } } = useForm({
 		resolver: zodResolver(formSchema),
 	  });
 
-	  const { startNumber, licensePlate, distance, speed, sessionName, setStartNumber, setLicensePlate, setDistance, setSpeed, setSessionName } = useParticipantForm();
+	  const { startNumber, licensePlate, setStartNumber, setLicensePlate, clearForm } = useParticipantForm();
 
+
+	  const { distance, speed, sessionName, setDistance, setSpeed, setSessionName } = useEventForm();
 	  const onSubmit = (data: any) => {
 		sendReady();
 	  };
@@ -84,7 +88,22 @@ export function SessionManager() {
 		}
 		
 		const onSave = (data: any) => {
-			setEvents(data.events.sort((a: Event, b: Event) => b.id - a.id));
+			setEvents([...events, {
+				distance: distance,
+				speed: speed,
+				start_timestamp: startTimestamp ? startTimestamp : 0,
+				end_timestamp: endTimestamp ? endTimestamp : 0,
+				license_plate: licensePlate,
+				startnumber: startNumber,
+				session_name: sessionName
+			}])
+			resetField("startnumber");
+			resetField("license_plate")
+			clearForm();
+		}
+
+		const onEvents = (data: any) => {
+			setEvents(data.events);
 		}
 
 		socket.on("ready", onReady);
@@ -92,6 +111,7 @@ export function SessionManager() {
 		socket.on("stop", onStop);
 		socket.on("timestamp", onTimestamp);
 		socket.on("save", onSave);
+		socket.on("events", onEvents);
 
 
 
@@ -101,6 +121,7 @@ export function SessionManager() {
 			socket.off("stop", onStop);
 			socket.off("timestamp", onTimestamp);
 			socket.off("save", onSave);
+			socket.off("events", onEvents);
 		};
 	}, []);
 
@@ -120,70 +141,36 @@ export function SessionManager() {
 
 	return (
 		<>
-		    <form onSubmit={handleSubmit(onSubmit)}>
-				<div>
-					<label htmlFor="startnumber">Startnumber: </label>
-					<input
-					{...register('startnumber')}
-					onChange={(e) => setStartNumber(e.target.value)}
-					/>
+		    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2 p-4">
+				<div className="flex gap-2 p-4">
+					<CustomInput register={register} name={"distance"} label={"Distance"} change={(e) => setDistance(parseInt(e.target.value))} type="number" className="flex-1" />
+					<CustomInput register={register} name={"speed"} label={"Speed"} change={(e) => setSpeed(parseInt(e.target.value))} type="number" />
+					<CustomInput register={register} name={"sessionName"} label={"Eventname"} change={(e) => setSessionName(e.target.value)} />
 				</div>
+				<div className="flex gap-2 p-4">
+					<CustomInput register={register} name={"startnumber"} label={"Startnumber"} change={(e) => setStartNumber(parseInt(e.target.value))} type="number" />
+					<CustomInput register={register} name={"license_plate"} label={"Licenseplate"} change={(e) => setLicensePlate(e.target.value)} />
+				</div>
+
+
+
 				
-				<div>
-					<label htmlFor="license_plate">Licenseplate: </label>
-					<input
-					{...register('license_plate')}
-					onChange={(e) => setLicensePlate(e.target.value)}
-					/>
-					
+				<div className="flex justify-center items-center">
+					<button
+						disabled={ready}
+						type="submit"
+						className="rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:bg-red-200"
+					>
+						READY
+					</button>
 				</div>
 
-				<div>
-					<label htmlFor="distance">Distance: </label>
-					<input
-						{...register('distance', {
-							setValueAs: (value) => Number(value),
-						})}
-						type="number"
-						onChange={(e) => setDistance(parseInt(e.target.value))}
-						/>
-					
-				</div>
-
-				<div>
-					<label htmlFor="speed">Speed: </label>
-					<input
-						{...register('speed', {
-							setValueAs: (value) => Number(value),
-						  })}
-						  type="number"
-						  onChange={(e) => setSpeed(parseInt(e.target.value))}
-						/>
-					
-				</div>
-
-				<div>
-					<label htmlFor="sessionName">Eventname: </label>
-					<input
-					{...register('sessionName')}
-					onChange={(e) => setSessionName(e.target.value)}
-					/>
-					
-				</div>
-				
-				<button
-					disabled={ready}
-					type="submit"
-					className="rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:bg-red-200"
-				>
-					Ready
-				</button>
-				</form>
+			</form>
 
 			<span>{ready ? "System is ready" : "System is not ready yet"}</span>
 			<Timer start={startTimestamp} end={endTimestamp} timestamp={currentTimestamp} />
 			<div>
-				{events.map((event, index) => <div key={index}>{event.startnumber} {event.license_plate} {event.start_timestamp} {event.end_timestamp}</div>)}
+				{events.sort((a: Event, b: Event) => (new Date(b.end_timestamp)).getTime() - (new Date(a.end_timestamp)).getTime()).map((event, index) => <div key={index}>{event.startnumber} {event.license_plate} {event.start_timestamp} {event.end_timestamp}</div>)}
 			</div>
 		</>
 	);
